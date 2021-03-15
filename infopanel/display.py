@@ -50,18 +50,6 @@ class Display(object):
         """Apply an image to the screen."""
         raise NotImplementedError
 
-    def rainbow_text(self, font, x, y, text, box=True):
-        """Make rainbow text."""
-        x_orig = x
-        for i, char in enumerate(text):
-            # pylint: disable=no-member
-            r, g, b = colors.interpolate_color(
-                float(i) / len(text), cmap=cm.gist_rainbow
-            )
-            x += self.text(font, x, y, r, g, b, char)
-        if box:
-            self.draw_box(x_orig - 2, y - font.height + 2, x, y + 2)
-
     def draw_box(self, xmin, ymin, xmax, ymax):
         """Don't use PIL because it blanks.  NOTE: Use graphics.DrawLine."""
         for x in range(xmin, xmax):

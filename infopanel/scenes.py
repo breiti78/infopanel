@@ -54,7 +54,7 @@ class Welcome(Scene):
 
     def draw_frame(self, display):
         """Draw the welcome frame."""
-        display.rainbow_text(self.font, 5, 20, "HELLO!")
+        display.text(self.font, 5, 20, 255, 0, 0, "HELLO!")
 
 
 class Time(Scene):
@@ -68,7 +68,7 @@ class Time(Scene):
     def draw_frame(self, display):
         """Draw the current time."""
         now = datetime.datetime.now()
-        display.rainbow_text(self.font, 5, 20, now.strftime("%I:%M %p"))
+        display.text(self.font, 5, 20, 255, 0, 0, now.strftime("%H:%M:%S"))
 
 
 class Giraffes(Scene):

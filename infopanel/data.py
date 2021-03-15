@@ -9,7 +9,7 @@ class InputData(collections.defaultdict):
     def __init__(self):
         """Construct default data."""
         collections.defaultdict.__init__(self)
-        self.default_factory = lambda: 0
+        self.default_factory = lambda: ""
         self["power"] = "1"
         self["mode"] = "all"
         self["brightness"] = 100

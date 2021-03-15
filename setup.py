@@ -6,7 +6,7 @@ with open('README.rst') as f:
 required = ['Pillow>=3.1.2',
             'voluptuous>=0.9.3',
             'PyYAML>=3.11',
-            'matplotlib>=1.0',
+            'webcolors==1.3',
             'paho-mqtt',
             'pytest',
             'pydocstyle']

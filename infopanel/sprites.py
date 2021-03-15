@@ -10,7 +10,6 @@ import os
 from PIL import Image as PILImage
 from PIL import ImageSequence
 
-from matplotlib import cm
 import voluptuous as vol
 
 from infopanel import helpers, colors, data
@@ -450,14 +449,14 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
             DynamicFancyText.add(
                 self,
                 self.label_fmt.format(self.label),
-                colors.rgb_from_name(self.label_color),
+                colors.name_to_rgb(self.label_color),
             )
         val = (
             self.value() if callable(self.value) else self.value
         )  # pylint: disable=not-callable
         text = self.val_fmt.format(val)
         self.last_val = val
-        DynamicFancyText.add(self, text, colors.rgb_from_name(self.value_color))
+        DynamicFancyText.add(self, text, colors.name_to_rgb(self.value_color))
 
     def update_value(self):
         """Update, but only if the value has changed."""
@@ -473,80 +472,6 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
         """Render a frame and advance."""
         self.update_value()
         return FancyText.render(self, display)
-
-
-class Duration(DynamicFancyText):  # pylint:disable=too-many-instance-attributes
-    """Text that renders a number (maybe a duration?) with a green-to-red color."""
-
-    CONF = DynamicFancyText.CONF.extend(
-        {
-            vol.Optional("low_val", default=13.0): vol.Coerce(float),
-            vol.Optional("high_val", default=23.0): vol.Coerce(float),
-        }
-    )
-
-    def __init__(self, max_x, max_y, data_source):
-        """Construct a sprite."""
-        DynamicFancyText.__init__(self, max_x, max_y, data_source=data_source)
-        self.last_val = None
-        self.low_val = None
-        self.high_val = None
-        self.cmap = colors.GREEN_RED
-
-    def _convert_data(self, val):  # pylint: disable=no-self-use
-        try:
-            return int(val)
-        except ValueError:
-            return None
-
-    def _make_text(self):
-        """Make elements of a duration with label and text."""
-        DynamicFancyText.add(
-            self,
-            self.label_fmt.format(self.label),
-            colors.rgb_from_name(self.label_color),
-        )
-        val = (
-            self.value() if callable(self.value) else self.value
-        )  # pylint: disable=not-callable
-        if val is None:
-            color = colors.interpolate_color(
-                self.low_val, self.low_val, self.high_val, self.cmap
-            )
-            text = "N/A"
-        else:
-            color = colors.interpolate_color(
-                val, self.low_val, self.high_val, self.cmap
-            )
-            text = self.val_fmt.format(val)
-        self.last_val = val
-        DynamicFancyText.add(self, text, color)
-
-
-class Temperature(Duration):
-    """A temperature with color dependent on a high and low bound."""
-
-    CONF = Duration.CONF.extend(
-        {
-            vol.Optional("low_val", default=-15.0): vol.Coerce(float),
-            vol.Optional("high_val", default=28.0): vol.Coerce(float),
-            vol.Optional("label_fmt", default="{}"): str,
-            vol.Optional("val_fmt", default="{:> .1f}"): str,
-        }
-    )
-
-    def __init__(self, max_x, max_y, data_source=None):
-        """Construct a sprite."""
-        Duration.__init__(self, max_x, max_y, data_source)
-        self.cmap = cm.jet  # pylint: disable=no-member
-
-    def _convert_data(self, val):
-        try:
-            return float(val)
-        except ValueError:
-            # can happen if data is 'unknown' or something.
-            return None
-
 
 class Giraffe(Sprite):
     """An animated Giraffe."""

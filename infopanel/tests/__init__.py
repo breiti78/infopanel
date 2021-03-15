@@ -20,9 +20,9 @@ class MockDisplay(display.Display):
     @property
     def height(self):
         """Get the height."""
-        return 32
+        return 64
 
     @property
     def width(self):
         """Get the width."""
-        return 64
+        return 192

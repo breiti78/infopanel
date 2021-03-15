@@ -10,13 +10,13 @@ import pygame
 
 from infopanel import display
 
-SCALING = 10
+SCALING = 5
 
 
 class DummyScreen(display.Display):
     """A dummy screen for testing purposes."""
 
-    def __init__(self, width=64, height=32):
+    def __init__(self, width=192, height=64):
         """Construct a dummy screen."""
         pygame.init()  # pylint: disable=no-member
 
