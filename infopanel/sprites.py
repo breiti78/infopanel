@@ -4,9 +4,7 @@ import random
 import inspect
 import sys
 import logging
-import datetime
 import os
-import json
 
 
 from PIL import Image as PILImage
@@ -447,7 +445,7 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
                 # make this a callable function to enable live/updating data
             self.text_color = lambda: self._convert_data(
                 self.data_source[conf["text_color"]]
-            )  
+            )
         self._make_text()
         return conf
 
