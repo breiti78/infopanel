@@ -6,6 +6,8 @@ import sys
 import logging
 import datetime
 import os
+import json
+
 
 from PIL import Image as PILImage
 from PIL import ImageSequence
@@ -60,6 +62,7 @@ GOOFY_EXCLAMATIONS = [
     "BOP",
 ]
 PALLETE_SCHEMA = vol.Schema({vol.Any(int, str): list})
+Color_SCHEMA = vol.Schema({int: tuple})
 
 FRAMES_SCHEMA = vol.Schema([str])
 LOG = logging.getLogger(__name__)
@@ -414,6 +417,7 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
             vol.Optional("val_fmt", default="{}"): str,
             vol.Optional("label_color", default="yellow"): str,
             vol.Optional("value_color", default="green"): str,
+            vol.Optional("text_color", default="red"): str,
         }
     )
 
@@ -428,6 +432,8 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
         self.data_label = None
         self.label_color = None
         self.value_color = None
+        self.text_color = None
+        self.last_col = None
 
     def apply_config(self, conf):
         """Validate and apply configuration to this sprite."""
@@ -437,6 +443,11 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
             self.value = lambda: self._convert_data(
                 self.data_source[conf["data_label"]]
             )
+        if conf["text_color"]:
+                # make this a callable function to enable live/updating data
+            self.text_color = lambda: self._convert_data(
+                self.data_source[conf["text_color"]]
+            )  
         self._make_text()
         return conf
 
@@ -454,9 +465,20 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
         val = (
             self.value() if callable(self.value) else self.value
         )  # pylint: disable=not-callable
+        col = (
+            self.text_color() if callable(self.text_color) else self.text_color
+            )
+        LOG.info("Text is: %s.", val)
+        LOG.info("Color is: %s.", col)
         text = self.val_fmt.format(val)
+        color_rgb = self.val_fmt.format(col)
+        if color_rgb == "":
+            color_rgb = "red"
+        LOG.info("Text is: %s.", text)
+        LOG.info("Color is: %s.", color_rgb)
         self.last_val = val
-        DynamicFancyText.add(self, text, colors.name_to_rgb(self.value_color))
+        self.last_col = col
+        DynamicFancyText.add(self, text, colors.name_to_rgb(color_rgb))
 
     def update_value(self):
         """Update, but only if the value has changed."""
@@ -464,6 +486,13 @@ class DynamicFancyText(FancyText):  # pylint:disable=too-many-instance-attribute
             self.value() if callable(self.value) else self.value
         )  # pylint: disable=not-callable
         if val != self.last_val:
+            # only do lookup when things change for speed.
+            self.clear()
+            self._make_text()
+        col = (
+            self.value() if callable(self.text_color) else self.text_color
+        )  # pylint: disable=not-callable
+        if col != self.last_col:
             # only do lookup when things change for speed.
             self.clear()
             self._make_text()
@@ -630,71 +659,6 @@ class AnimatedGif(BaseImage):
         """Height of the sprite."""
         _width, height = self.frame.size
         return height
-
-
-class Reddit(FancyText):
-    """The titles of some top posts in various subreddits."""
-
-    CONF = FancyText.CONF.extend(
-        {
-            "client_id": str,
-            "client_secret": str,
-            vol.Optional("user_agent", default="infopanel"): str,
-            vol.Optional("subreddits", default=["worldnews", "politics", "news"]): list,
-            vol.Optional("num_headlines", default=5): int,
-            vol.Optional("update_minutes", default=5): int,
-        }
-    )
-
-    def __init__(self, *args, **kwargs):
-        """Construct a sprite."""
-        FancyText.__init__(self, *args, **kwargs)
-        self._praw = None
-        self.subreddits = None
-        self.num_headlines = None
-        self.update_minutes = None
-        self._last_update_time = datetime.datetime.now()
-
-    def apply_config(self, conf):
-        """Validate and apply configuration to this sprite."""
-        conf = FancyText.apply_config(self, conf)
-        import praw  # pylint: disable=import-outside-toplevel, import-error
-
-        self._praw = praw.Reddit(
-            client_id=conf["client_id"],
-            client_secret=conf["client_secret"],
-            user_agent=conf["user_agent"],
-        )
-        self.update_headlines()
-        return conf
-
-    def update_headlines(self):
-        """Update sprite text based on current subreddit contents."""
-        self.clear()
-        try:
-            headlines = self._praw.subreddit("+".join(self.subreddits)).hot(
-                limit=self.num_headlines
-            )
-            for headline in headlines:
-                # pylint: disable=unsubscriptable-object
-                self.add(headline.title + 10 * " ", self.pallete["text"])
-        except:  # pylint: disable=bare-except
-            # possibly a connection error.
-            # pylint: disable=unsubscriptable-object
-            self.add("Headlines N/A", self.pallete["text"])
-
-    def update_phrase(self):
-        """Occasionally update the headlines."""
-        if not self._ticks % self.ticks_per_phrase:
-            now = datetime.datetime.now()
-            if now - self._last_update_time > datetime.timedelta(
-                minutes=self.update_minutes
-            ):
-                self.update_headlines()
-                self._last_update_time = now
-
-    def _maybe_flip(self):
-        return False
 
 
 def sprite_factory(config, data_source, disp):
