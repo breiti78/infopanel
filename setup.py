@@ -3,8 +3,7 @@ from setuptools import setup, find_packages
 with open('README.rst') as f:
     long_description = f.read()
 
-required = ['Pillow==3.1.2',
-            'voluptuous>=0.9.3',
+required = ['voluptuous>=0.9.3',
             'PyYAML>=3.11',
             'webcolors==1.3',
             'paho-mqtt',
