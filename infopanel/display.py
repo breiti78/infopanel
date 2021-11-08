@@ -1,7 +1,5 @@
 """Displays to present stuff."""
 
-from matplotlib import cm
-
 try:
     from rgbmatrix import graphics
     from rgbmatrix import RGBMatrix, RGBMatrixOptions
