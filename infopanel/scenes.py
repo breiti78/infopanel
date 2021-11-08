@@ -1,5 +1,6 @@
 """Scenes. One of these will be active at any given time."""
 
+
 import time
 import inspect
 import sys
@@ -50,7 +51,7 @@ class Welcome(Scene):
     def __init__(self, width, height):
         """Construct a scene."""
         Scene.__init__(self, width, height)
-        self.font = helpers.load_font("9x15B.bdf")
+        self.font = helpers.load_font("10x20.bdf")
 
     def draw_frame(self, display):
         """Draw the welcome frame."""
@@ -63,13 +64,13 @@ class Time(Scene):
     def __init__(self, width, height):
         """Construct a scene."""
         Scene.__init__(self, width, height)
-        self.font = helpers.load_font("9x15B.bdf")
+        self.font = helpers.load_font("10x20.bdf")
 
     def draw_frame(self, display):
         """Draw the current time."""
         now = datetime.datetime.now()
-        display.text(self.font, 5, 20, 255, 0, 0, now.strftime("%H:%M:%S"))
-
+        display.text(self.font, 57, 28, 255, 0, 0, now.strftime("%H:%M:%S"))
+        display.text(self.font, 36, 48, 255, 0, 0, now.strftime("%d. %m. %Y"))
 
 class Giraffes(Scene):
     """A field of giraffes saying things."""
