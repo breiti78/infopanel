@@ -8,7 +8,8 @@ required = ['voluptuous>=0.9.3',
             'webcolors==1.3',
             'paho-mqtt',
             'pytest',
-            'pydocstyle']
+            'pydocstyle',
+            'Pillow']
 
 setup(name='infopanel',
     version='0.1',
